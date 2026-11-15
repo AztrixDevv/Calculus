@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cálculo 1 — aprender com intuição</title>
+<style>
+/* =========================================================
+   DESIGN SYSTEM — tokens
+   ========================================================= */
+:root{
+	/* cores */
+	--bg:#EEF0F7; --bg-2:#F5F6FA; --surface:#F8F9FC; --white:#FFFFFF; --gray:#E5E7EF; --disabled:#D8DAE5;
+	--ink:#17182B; --ink-2:#5D627A; --ink-3:#85899D;
+	--blue:#8589DE; --blue-2:#A3A8EE; --blue-3:#C5C9FA; --blue-ink:#5459BE;
+	--rose:#C77E90; --rose-bg:#F7ECEF;
+	/* luz e sombra (luz vindo do alto à esquerda) */
+	--sh-dark:rgba(158,164,196,.55); --sh-light:#FFFFFF;
+	--raised-1:6px 6px 14px var(--sh-dark),-6px -6px 14px var(--sh-light);
+	--raised-2:10px 10px 24px var(--sh-dark),-10px -10px 24px var(--sh-light);
+	--raised-3:18px 18px 44px rgba(150,156,190,.5),-14px -14px 36px var(--sh-light);
+	--float:0 24px 60px rgba(120,126,170,.28),0 4px 14px rgba(120,126,170,.14);
+	--inset-1:inset 3px 3px 7px var(--sh-dark),inset -3px -3px 7px var(--sh-light);
+	--inset-2:inset 6px 6px 13px var(--sh-dark),inset -6px -6px 13px var(--sh-light);
+	/* tipografia */
+	--font:"Inter","SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+	--serif:"New York",Georgia,"Times New Roman",serif;
+	/* espaçamento, raios */
+	--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:72px;
+	--r-sm:10px;--r-md:16px;--r-lg:24px;--r-xl:32px;
+	/* movimento */
+	--ease:cubic-bezier(.22,.8,.24,1);--t-fast:.18s;--t-base:.32s;--t-slow:.5s;
+	/* dimensões */
+	--side-w:272px;--side-w-c:88px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:32px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 var(--font);letter-spacing:-.005em;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:var(--r-sm)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* =========================================================
+   SIDEBAR — estilo macOS
+   ========================================================= */
+.side{position:fixed;inset:16px auto 16px 16px;width:var(--side-w);z-index:20;display:flex;flex-direction:column;background:linear-gradient(160deg,var(--surface),var(--bg-2));border-radius:var(--r-xl);box-shadow:var(--raised-2);padding:20px 14px;transition:width var(--t-slow) var(--ease),transform var(--t-slow) var(--ease)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;padding:4px 8px 18px;white-space:nowrap}
+.mark{width:42px;height:42px;border-radius:14px;background:var(--bg);box-shadow:var(--raised-1);display:grid;place-items:center;color:var(--blue-ink);flex:none}
+.brand b{font-size:15px;letter-spacing:-.02em;line-height:1.2;display:block}
+.brand small{color:var(--ink-3);font-size:12px;display:block}
+.side-scroll{flex:1;overflow-y:auto;overflow-x:hidden;margin:0 -6px;padding:0 6px;scrollbar-width:none}
+.side-scroll::-webkit-scrollbar{display:none}
+.group{margin:0 0 6px}
+.group+.group{border-top:1px solid rgba(133,137,157,.16);padding-top:14px;margin-top:10px}
+.group h4{margin:0 10px 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:700;white-space:nowrap;transition:opacity var(--t-base)}
+.nav-link{position:relative;display:flex;align-items:center;gap:14px;height:44px;padding:0 13px;margin-bottom:4px;border-radius:14px;text-decoration:none;color:var(--ink-2);font-size:14.5px;font-weight:550;white-space:nowrap;transition:color var(--t-fast),background var(--t-base),box-shadow var(--t-base)}
+.nav-link:hover{color:var(--blue-ink);background:rgba(255,255,255,.65)}
+.nav-link.active{color:var(--blue-ink);background:var(--bg);box-shadow:var(--inset-1)}
+.nav-link.active::before{content:"";position:absolute;left:-6px;top:12px;bottom:12px;width:4px;border-radius:4px;background:linear-gradient(var(--blue-2),var(--blue))}
+.nav-link span{transition:opacity var(--t-base)}
+.nav-link::after{content:attr(data-tip);position:absolute;left:calc(100% + 18px);top:50%;transform:translate(-6px,-50%);background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:9px;box-shadow:var(--float);opacity:0;pointer-events:none;transition:opacity var(--t-fast),transform var(--t-fast) var(--ease);z-index:30}
+.collapse{display:flex;align-items:center;gap:14px;height:44px;margin-top:10px;padding:0 13px;border:0;border-radius:14px;background:var(--bg);box-shadow:var(--raised-1);color:var(--ink-2);font:600 14px var(--font);cursor:pointer;white-space:nowrap;transition:box-shadow var(--t-fast),transform var(--t-fast),color var(--t-fast)}
+.collapse:hover{color:var(--blue-ink)}
+.collapse:active{box-shadow:var(--inset-1);transform:scale(.985)}
+.collapse svg.i{transition:transform var(--t-slow) var(--ease)}
+body.is-collapsed .side{width:var(--side-w-c)}
+body.is-collapsed .brand div,body.is-collapsed .group h4,body.is-collapsed .nav-link span,body.is-collapsed .collapse span{opacity:0;pointer-events:none;width:0;overflow:hidden}
+body.is-collapsed .collapse svg.i{transform:rotate(180deg)}
+body.is-collapsed .nav-link:hover::after,body.is-collapsed .nav-link:focus-visible::after{opacity:1;transform:translate(0,-50%)}
+body.is-collapsed .side-scroll{overflow:visible}
+.main{margin-left:calc(var(--side-w) + 32px);transition:margin-left var(--t-slow) var(--ease)}
+body.is-collapsed .main{margin-left:calc(var(--side-w-c) + 32px)}
+.topbar{display:none}
+.scrim{position:fixed;inset:0;background:rgba(23,24,43,.22);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity var(--t-base);z-index:15}
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:0 22px;border:0;border-radius:14px;font:650 15px var(--font);text-decoration:none;cursor:pointer;color:var(--ink);background:var(--bg);box-shadow:var(--raised-1);transition:transform var(--t-fast) var(--ease),box-shadow var(--t-base),color var(--t-fast),background var(--t-base)}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--raised-2)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.985);box-shadow:var(--inset-1)}
+.btn:disabled{color:var(--disabled);box-shadow:none;background:var(--gray);cursor:not-allowed}
+.btn.primary{color:#fff;background:linear-gradient(145deg,var(--blue-2),var(--blue));box-shadow:6px 8px 18px rgba(133,137,222,.45),-5px -5px 14px var(--sh-light)}
+.btn.primary:hover:not(:disabled){box-shadow:8px 12px 26px rgba(133,137,222,.52),-6px -6px 16px var(--sh-light)}
+.btn.primary:active:not(:disabled){box-shadow:inset 4px 4px 10px rgba(84,89,190,.45),inset -3px -3px 8px rgba(255,255,255,.25)}
+.btn svg.i{width:18px;height:18px;transition:transform var(--t-base) var(--ease)}
+.btn:hover svg.i{transform:translateX(3px)}
+
+/* =========================================================
+   TIPOGRAFIA E SEÇÕES
+   ========================================================= */
+.label,.eyebrow{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--blue-ink)}
+h1{font-size:clamp(42px,5.6vw,72px);line-height:1.03;letter-spacing:-.045em;margin:16px 0 20px;font-weight:750}
+h1 .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em}
+h1 .w i{display:inline-block;font-style:normal}
+h1 em{font-style:normal;color:var(--blue)}
+.wrap{max-width:1080px;margin:auto;padding:var(--s8) var(--s6)}
+.heading{margin-bottom:var(--s6);max-width:620px}
+.heading h2{font-size:clamp(28px,3.4vw,40px);letter-spacing:-.035em;line-height:1.15;margin:6px 0 8px;font-weight:720}
+.heading p{color:var(--ink-2);margin:0}
+.divider{height:1px;margin:0 var(--s6);max-width:1016px;margin-inline:auto;background:linear-gradient(90deg,transparent,rgba(133,137,157,.28),transparent)}
+
+/* hero */
+.hero-inner{max-width:1080px;margin:auto;padding:88px var(--s6) 64px;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+.hero p.lead{color:var(--ink-2);font-size:18px;max-width:540px;margin:0}
+.actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:32px}
+.art{border-radius:var(--r-xl);padding:26px;background:linear-gradient(150deg,var(--surface),var(--bg-2));box-shadow:var(--raised-3)}
+.art-well{border-radius:var(--r-lg);background:var(--bg);box-shadow:var(--inset-2);padding:14px}
+.art svg{width:100%;height:auto;display:block}
+.art p{font-size:13.5px;color:var(--ink-2);margin:16px 6px 0}
+
+/* trilha — sem cards, colunas abertas */
+.path{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s6)}
+.step{position:relative;padding-top:6px}
+.step .num{width:52px;height:52px;border-radius:50%;background:var(--bg);box-shadow:var(--inset-1);display:grid;place-items:center;color:var(--blue-ink);margin-bottom:18px}
+.step small{color:var(--blue-ink);font-weight:700;letter-spacing:.12em;font-size:12px}
+.step h3{margin:6px 0 8px;font-size:21px;letter-spacing:-.02em}
+.step p{margin:0;color:var(--ink-2);font-size:15px}
+.step+.step::before{content:"";position:absolute;left:calc(var(--s6) / -2);top:8px;bottom:8px;width:1px;background:linear-gradient(transparent,rgba(133,137,157,.3),transparent)}
+
+/* aulas */
+.lessons{background:var(--bg-2)}
+.lesson-layout{display:grid;grid-template-columns:190px 1fr;gap:var(--s7);align-items:start}
+.toc{position:sticky;top:32px}
+.toc b{display:block;margin:0 0 10px 14px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.toc a{display:block;text-decoration:none;color:var(--ink-2);padding:7px 14px;border-left:2px solid rgba(133,137,157,.22);font-size:14px;transition:color var(--t-fast),border-color var(--t-fast),padding var(--t-base) var(--ease)}
+.toc a:hover,.toc a.on{color:var(--blue-ink);border-left-color:var(--blue);padding-left:20px}
+.stack{display:grid}
+.lesson{scroll-margin-top:32px;padding:var(--s6) 0}
+.lesson:first-child{padding-top:0}
+.lesson+.lesson{border-top:1px solid rgba(133,137,157,.2)}
+.lesson h3{font-size:26px;margin:6px 0 10px;letter-spacing:-.03em;font-weight:720}
+.lesson p{color:var(--ink-2);margin:12px 0}
+.formula{font:20px/1.6 var(--serif);background:var(--bg);box-shadow:var(--inset-2);padding:16px 20px;border-radius:var(--r-md);overflow:auto;color:var(--ink);margin:16px 0}
+.formula em{font:13px var(--font);font-style:normal;color:var(--ink-3);display:block;margin-top:2px}
+.idea{display:flex;gap:14px;background:var(--bg);box-shadow:var(--inset-1);padding:16px 18px;margin:16px 0;border-radius:var(--r-md);color:var(--ink-2)}
+.idea .bar{width:4px;border-radius:4px;background:linear-gradient(var(--blue-2),var(--blue));flex:none}
+.idea b{color:var(--ink)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4);margin:16px 0}
+.mini{padding:18px 20px;border-radius:var(--r-md);background:linear-gradient(150deg,var(--surface),var(--bg));box-shadow:var(--raised-1);transition:transform var(--t-base) var(--ease),box-shadow var(--t-base)}
+.mini:hover{transform:translateY(-2px);box-shadow:var(--raised-2)}
+.mini b{display:block;color:var(--ink);margin-bottom:2px}
+.mini p{font-size:14.5px;margin:4px 0 0!important}
+
+/* prática */
+.practice-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:var(--s7);align-items:start}
+.practice-info h3{font-size:24px;letter-spacing:-.03em;margin:8px 0}
+.practice-info p,.practice-info li{color:var(--ink-2)}
+.practice-info ul{padding:0;margin:18px 0;list-style:none;display:grid;gap:10px}
+.practice-info li{display:flex;gap:12px;align-items:flex-start;font-size:15px}
+.practice-info li svg.i{width:18px;height:18px;color:var(--blue);margin-top:4px}
+.score{display:inline-flex;align-items:center;gap:10px;margin-top:10px;padding:10px 18px;border-radius:999px;background:var(--bg);box-shadow:var(--inset-1);color:var(--blue-ink);font-weight:700;font-size:14px}
+.quiz{border-radius:var(--r-xl);padding:30px;background:linear-gradient(150deg,var(--surface),var(--bg-2));box-shadow:var(--raised-3)}
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.controls label{font-size:14px;font-weight:600;color:var(--ink-2)}
+.count{margin-left:auto;color:var(--ink-3);font-size:13px;font-weight:600}
+.question{font-weight:700;font-size:20px;line-height:1.4;letter-spacing:-.02em;margin:10px 0 20px}
+.answers{display:grid;gap:12px}
+.answer{display:flex;align-items:center;text-align:left;min-height:52px;padding:12px 18px;border:0;border-radius:var(--r-md);background:var(--bg);box-shadow:var(--raised-1);cursor:pointer;color:var(--ink);font:550 15.5px var(--font);transition:transform var(--t-fast) var(--ease),box-shadow var(--t-base),color var(--t-fast),background var(--t-base)}
+.answer:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--raised-2);color:var(--blue-ink)}
+.answer:active:not(:disabled){transform:scale(.99);box-shadow:var(--inset-1)}
+.answer:disabled{cursor:default;color:var(--ink-3)}
+.answer.good{box-shadow:var(--inset-2);color:var(--blue-ink);background:linear-gradient(145deg,#E7E9FC,#F1F2FD);font-weight:700}
+.answer.bad{box-shadow:var(--inset-1);color:var(--rose);background:var(--rose-bg)}
+.feedback{min-height:28px;margin:20px 0 0;font-size:14.5px;color:var(--ink-2);padding-left:0;line-height:1.6}
+.feedback.good,.feedback.bad{padding-left:30px;background-repeat:no-repeat;background-position:0 3px;background-size:20px}
+.feedback.good{color:var(--blue-ink);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235459BE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m8 12.5 3 3 5-6'/%3E%3C/svg%3E")}
+.feedback.bad{color:#A9576A;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C77E90' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 8v5M12 16.2v.1'/%3E%3C/svg%3E")}
+.quiz-actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px;flex-wrap:wrap}
+.soft{color:var(--ink-2)}
+
+/* select customizado */
+.select{position:relative;min-width:190px}
+.native{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.select-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:0 16px;border:0;border-radius:14px;background:var(--bg);box-shadow:var(--inset-1);font:600 14.5px var(--font);color:var(--ink);cursor:pointer;transition:box-shadow var(--t-base),color var(--t-fast)}
+.select-btn:hover{color:var(--blue-ink)}
+.select-btn:focus-visible,.select.open .select-btn{box-shadow:var(--inset-1),0 0 0 3px var(--blue-3)}
+.select-btn svg.i{width:18px;height:18px;color:var(--blue-ink);transition:transform var(--t-base) var(--ease)}
+.select.open .select-btn svg.i{transform:rotate(180deg)}
+.select-list{position:absolute;z-index:10;top:calc(100% + 10px);left:0;right:0;margin:0;padding:8px;list-style:none;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--float);opacity:0;visibility:hidden;transform:translateY(-8px) scale(.98);transform-origin:top;transition:opacity var(--t-fast),transform var(--t-base) var(--ease),visibility 0s var(--t-base)}
+.select.open .select-list{opacity:1;visibility:visible;transform:none;transition-delay:0s}
+.select-list li{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:11px;font-size:14.5px;font-weight:550;color:var(--ink-2);cursor:pointer;transition:background var(--t-fast),color var(--t-fast)}
+.select-list li.hl{background:var(--bg);color:var(--blue-ink)}
+.select-list li[aria-selected="true"]{background:var(--blue-3);color:#34388F;font-weight:700}
+.select-list li svg.i{width:16px;height:16px;opacity:0}
+.select-list li[aria-selected="true"] svg.i{opacity:1}
+
+/* rodapé */
+.footer{text-align:center;color:var(--ink-3);padding:36px 24px 44px;font-size:13px}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+@media(max-width:1000px){
+	.hero-inner{grid-template-columns:1fr;gap:40px;padding-top:56px}
+	.art{max-width:480px}
+	.lesson-layout{grid-template-columns:1fr;gap:var(--s5)}
+	.toc{position:static;display:flex;flex-wrap:wrap;gap:8px}
+	.toc b{width:100%;margin-left:0}
+	.toc a{border:0;border-radius:999px;background:var(--bg);box-shadow:var(--raised-1);padding:6px 14px}
+	.toc a:hover,.toc a.on{padding-left:14px}
+	.practice-layout{grid-template-columns:1fr;gap:var(--s6)}
+}
+@media(max-width:900px){
+	.main,body.is-collapsed .main{margin-left:0}
+	.topbar{display:flex;position:sticky;top:0;z-index:10;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(238,240,247,.86);backdrop-filter:blur(14px)}
+	.topbar .brand{padding:0}
+	.icon-btn{width:44px;height:44px;border:0;border-radius:14px;background:var(--bg);box-shadow:var(--raised-1);color:var(--ink-2);display:grid;place-items:center;cursor:pointer;transition:box-shadow var(--t-fast),transform var(--t-fast)}
+	.icon-btn:active{box-shadow:var(--inset-1);transform:scale(.97)}
+	.side,body.is-collapsed .side{width:min(300px,84vw);inset:10px auto 10px 10px;transform:translateX(-120%)}
+	body.menu-open .side{transform:none}
+	body.menu-open .scrim{opacity:1;pointer-events:auto}
+	body.is-collapsed .brand div,body.is-collapsed .group h4,body.is-collapsed .nav-link span,body.is-collapsed .collapse span{opacity:1;width:auto}
+	.collapse{display:none}
+	.nav-link::after{display:none}
+}
+@media(max-width:700px){
+	.path{grid-template-columns:1fr;gap:var(--s5)}
+	.step+.step::before{display:none}
+	.wrap{padding:var(--s7) 18px}
+	.hero-inner{padding:40px 18px 48px}
+	.cols{grid-template-columns:1fr}
+	.quiz{padding:20px}
+	.count{margin-left:0;width:100%}
+	.select{flex:1}
+	.quiz-actions .btn{flex:1}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ícones reutilizáveis -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+	<defs>
+		<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></symbol>
+		<symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h6a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-5h6"/></symbol>
+		<symbol id="i-limit" viewBox="0 0 24 24"><path d="M4 19c5 0 8-3 10-9"/><circle cx="16.5" cy="6" r="2.3"/><path d="M4 19h2M9 19h2"/></symbol>
+		<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 14c3-8 6-8 9 0s6 8 9 0"/></symbol>
+		<symbol id="i-deriv" viewBox="0 0 24 24"><path d="M4 18c4 0 6-3 8-7s4-5 8-5"/><path d="M8 15.5 17 9"/><circle cx="12" cy="12.2" r="1.3"/></symbol>
+		<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/></symbol>
+		<symbol id="i-integral" viewBox="0 0 24 24"><path d="M15 4.5c-2.2-.6-3.2.8-3.2 3.5v8c0 2.700-1 4.100-3.200 3.500"/><path d="M8 12h8" opacity=".0"/></symbol>
+		<symbol id="i-swap" viewBox="0 0 24 24"><path d="M5 9h12l-3-3M19 15H7l3 3"/></symbol>
+		<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.500 4.500L19 7.500"/></symbol>
+		<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+		<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+		<symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+		<symbol id="i-panel" viewBox="0 0 24 24"><rect x="3.500" y="4.500" width="17" height="15" rx="4"/><path d="M9.500 4.500v15"/></symbol>
+		<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+		<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.500 10.900c.6.500 1 1.200 1 2V16h5v-.1c0-.8.400-1.500 1-2A6 6 0 0 0 12 3z"/></symbol>
+		<symbol id="i-redo" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.500-5.800M20 4v4.500h-4.500"/></symbol>
+	</defs>
+</svg>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="side" id="side" aria-label="Navegação principal">
+	<a class="brand" href="#inicio"><span class="mark"><svg class="i" style="width:22px;height:22px"><use href="#i-integral"/></svg></span><div><b>Cálculo sem mistério</b><small>Guia intuitivo</small></div></a>
+	<nav class="side-scroll" id="links">
+		<div class="group">
+			<h4>Percurso</h4>
+			<a class="nav-link" href="#inicio" data-tip="Início"><svg class="i"><use href="#i-home"/></svg><span>Início</span></a>
+			<a class="nav-link" href="#trilha" data-tip="Trilha"><svg class="i"><use href="#i-route"/></svg><span>Trilha</span></a>
+		</div>
+		<div class="group">
+			<h4>Aulas</h4>
+			<a class="nav-link" href="#limites" data-tip="Limites"><svg class="i"><use href="#i-limit"/></svg><span>Limites</span></a>
+			<a class="nav-link" href="#continuidade" data-tip="Continuidade"><svg class="i"><use href="#i-wave"/></svg><span>Continuidade</span></a>
+			<a class="nav-link" href="#derivadas" data-tip="Derivadas"><svg class="i"><use href="#i-deriv"/></svg><span>Derivadas</span></a>
+			<a class="nav-link" href="#aplicacoes" data-tip="Aplicações"><svg class="i"><use href="#i-target"/></svg><span>Aplicações</span></a>
+			<a class="nav-link" href="#integrais" data-tip="Integrais"><svg class="i"><use href="#i-integral"/></svg><span>Integrais</span></a>
+			<a class="nav-link" href="#teorema" data-tip="Teorema Fundamental"><svg class="i"><use href="#i-swap"/></svg><span>Teorema Fundamental</span></a>
+		</div>
+		<div class="group">
+			<h4>Prática</h4>
+			<a class="nav-link" href="#praticar" data-tip="Praticar"><svg class="i"><use href="#i-check"/></svg><span>Praticar</span></a>
+		</div>
+	</nav>
+	<button class="collapse" id="collapse" aria-label="Recolher menu" aria-expanded="true"><svg class="i"><use href="#i-panel"/></svg><span>Recolher menu</span></button>
+</aside>
+
+<div class="main">
+	<header class="topbar">
+		<a class="brand" href="#inicio"><span class="mark" style="width:38px;height:38px"><svg class="i"><use href="#i-integral"/></svg></span><div><b>Cálculo sem mistério</b></div></a>
+		<button class="icon-btn" id="menu" aria-label="Abrir menu" aria-expanded="false"><svg class="i"><use href="#i-menu"/></svg></button>
+	</header>
+
+	<main>
+		<section class="hero" id="inicio"><div class="hero-inner"><div class="hero-text"><div class="eyebrow">Um guia intuitivo de Cálculo 1</div><h1 id="title">Entenda a mudança. Some as partes.</h1><p class="lead">Aprenda limites, derivadas e integrais pelas ideias que os tornam úteis. Explore exemplos, conecte os conceitos e pratique com questões explicadas.</p><div class="actions"><a class="btn primary" href="#aulas">Começar a aprender <svg class="i"><use href="#i-arrow"/></svg></a><a class="btn" href="#praticar">Ir aos exercícios</a></div></div>
+			<div class="art"><div class="art-well"><svg viewBox="0 0 340 190" role="img" aria-label="Curva, tangente e área acumulada"><defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="#8589DE" stop-opacity=".42"/><stop offset="1" stop-color="#8589DE" stop-opacity=".02"/></linearGradient></defs><path d="M35 158H322M45 170V20" stroke="#B5B9CE" stroke-linecap="round"/><path d="M45 157 C83 152 95 142 122 120 S177 76 211 68 S274 43 314 22 L314 158Z" fill="url(#g)"/><path class="curve" d="M45 157 C83 152 95 142 122 120 S177 76 211 68 S274 43 314 22" fill="none" stroke="#8589DE" stroke-width="4" stroke-linecap="round"/><path d="M115 139L222 43" stroke="#17182B" stroke-width="1.6" stroke-dasharray="6 5" stroke-linecap="round"/><circle cx="171" cy="87" r="6" fill="#F8F9FC" stroke="#5459BE" stroke-width="3"/><text x="224" y="44" fill="#17182B" font-size="13" font-weight="600">inclinação</text><text x="250" y="145" fill="#5459BE" font-size="13" font-weight="600">área</text><text x="320" y="176" fill="#85899D" font-size="12">x</text></svg></div><p>Derivada: inclinação instantânea. Integral: acumulação.</p></div></div></section>
+
+		<div class="divider"></div>
+
+		<section class="wrap" id="trilha"><div class="heading"><div class="label">Uma ideia leva à outra</div><h2>A trilha de aprendizagem</h2><p>Três perguntas que organizam o curso.</p></div>
+			<div class="path">
+				<article class="step"><div class="num"><svg class="i"><use href="#i-limit"/></svg></div><small>01 · LIMITES</small><h3>Para onde está indo?</h3><p>Descreva o comportamento de uma função quando x se aproxima de um valor, mesmo sem chegar lá.</p></article>
+				<article class="step"><div class="num"><svg class="i"><use href="#i-deriv"/></svg></div><small>02 · DERIVADAS</small><h3>Quão rápido muda?</h3><p>Meça a taxa de variação instantânea e encontre a inclinação da curva em cada ponto.</p></article>
+				<article class="step"><div class="num"><svg class="i"><use href="#i-integral"/></svg></div><small>03 · INTEGRAIS</small><h3>Quanto se acumulou?</h3><p>Some pequenas contribuições para calcular áreas, distâncias e quantidades acumuladas.</p></article>
+			</div></section>
+
+		<section class="lessons" id="aulas"><div class="wrap"><div class="heading"><div class="label">Conceitos e exemplos</div><h2>As aulas</h2><p>Leia na ordem: cada assunto prepara o próximo.</p></div>
+			<div class="lesson-layout"><aside class="toc"><b>Nesta página</b><a href="#limites">Limites</a><a href="#continuidade">Continuidade</a><a href="#derivadas">Derivadas</a><a href="#aplicacoes">Aplicações</a><a href="#integrais">Integrais</a><a href="#teorema">Teorema Fundamental</a></aside>
+			<div class="stack">
+			<article class="lesson" id="limites"><div class="label">01 · Aproximar sem necessariamente chegar</div><h3>Limites</h3><p>Imagine caminhar até uma parede percorrendo, a cada passo, metade da distância restante. Você se aproxima cada vez mais. O limite descreve para onde a função tende quando x se aproxima de um ponto.</p><div class="formula">lim<sub>x→a</sub> f(x) = L <em>Quando x se aproxima de a, f(x) se aproxima de L.</em></div><p>Tente substituir x por a. Se aparecer 0/0, simplifique (por exemplo, fatorando) antes de substituir. O valor da função exatamente em a pode ser diferente ou nem existir.</p><div class="idea"><span class="bar"></span><div><b>Exemplo:</b> (x² − 4)/(x − 2) = x + 2, para x ≠ 2. Quando x → 2, o limite é 4, embora a fração original não esteja definida em 2.</div></div><div class="cols"><div class="mini"><b>Limites laterais</b><p>O limite bilateral existe quando os limites pela esquerda e pela direita existem e são iguais.</p></div><div class="mini"><b>Limites no infinito</b><p>Descrevem o comportamento distante da função e podem revelar uma assíntota horizontal.</p></div></div><p>Se o denominador tende a zero e o numerador não, examine os sinais de cada lado: o limite pode divergir para +∞ ou −∞.</p></article>
+			<article class="lesson" id="continuidade"><div class="label">A ponte entre limites e funções</div><h3>Continuidade</h3><p>Intuitivamente, uma função é contínua em a quando o gráfico não tem salto, buraco ou ruptura naquele ponto. Para isso, f(a) deve existir, o limite deve existir e eles precisam ser iguais:</p><div class="formula">lim<sub>x→a</sub> f(x) = f(a)</div><p>Polinômios são contínuos em toda parte; funções racionais, onde o denominador não zera. O Teorema do Valor Intermediário garante que uma função contínua que muda de sinal num intervalo cruza zero em algum ponto desse intervalo.</p></article>
+			<article class="lesson" id="derivadas"><div class="label">02 · A taxa de mudança</div><h3>Derivadas</h3><p>A velocidade média é a variação da posição dividida pelo tempo. Para obter a velocidade em um instante, aproxime os dois instantes até coincidirem: surge um limite, que define a derivada.</p><div class="formula">f′(a) = lim<sub>h→0</sub> [f(a+h) − f(a)] / h <em>Geometricamente, f′(a) é a inclinação da reta tangente ao gráfico.</em></div><div class="cols"><div class="mini"><b>Regras básicas</b><p>(xⁿ)′ = n·xⁿ⁻¹<br>(cf)′ = cf′<br>(f ± g)′ = f′ ± g′</p></div><div class="mini"><b>Produto, quociente e cadeia</b><p>(fg)′ = f′g + fg′<br>(f/g)′ = (f′g − fg′)/g²<br>(f(g(x)))′ = f′(g(x))g′(x)</p></div><div class="mini"><b>Exponenciais e logaritmos</b><p>(eˣ)′ = eˣ<br>(aˣ)′ = aˣ ln a<br>(ln x)′ = 1/x, x &gt; 0</p></div><div class="mini"><b>Trigonométricas</b><p>(sen x)′ = cos x<br>(cos x)′ = −sen x<br>(tg x)′ = sec²x</p></div></div><div class="idea"><span class="bar"></span><div><b>Exemplo:</b> se f(x) = x³, então f′(x) = 3x². Em x = 2, a inclinação é 12. Se s(t) é posição, s′(t) é velocidade e s″(t), aceleração.</div></div><p>Na derivação implícita, derive ambos os lados em relação a x. Como y depende de x, a regra da cadeia dá (y²)′ = 2y·dy/dx.</p></article>
+			<article class="lesson" id="aplicacoes"><div class="label">Lendo o comportamento de uma função</div><h3>Aplicações das derivadas</h3><div class="cols"><div class="mini"><b>Crescimento e extremos</b><p>f′ &gt; 0 indica crescimento; f′ &lt; 0, decrescimento. Pontos onde f′ = 0 ou não existe são candidatos a máximos e mínimos locais.</p></div><div class="mini"><b>Concavidade</b><p>f″ &gt; 0 indica concavidade para cima; f″ &lt; 0, para baixo. Uma mudança pode indicar ponto de inflexão.</p></div><div class="mini"><b>Otimização</b><p>Modele a situação com uma função, encontre pontos críticos e compare valores pertinentes, incluindo extremos do intervalo.</p></div><div class="mini"><b>Aproximação linear</b><p>Perto de a, f(x) ≈ f(a) + f′(a)(x − a): a curva se parece com sua reta tangente.</p></div></div></article>
+			<article class="lesson" id="integrais"><div class="label">03 · Somar para medir o todo</div><h3>Integrais</h3><p>Para estimar a área sob uma curva, divida a região em retângulos estreitos e some suas áreas. No limite de retângulos cada vez menores, obtemos a integral definida.</p><div class="formula">∫<sub>a</sub><sup>b</sup> f(x) dx = lim Σ f(xᵢ*) Δx <em>Acumulação líquida: acima do eixo x conta positivo; abaixo, negativo.</em></div><p>Uma integral indefinida encontra uma primitiva F, cuja derivada é f. Como a derivada de uma constante é zero, escrevemos + C.</p><div class="cols"><div class="mini"><b>Primitivas essenciais</b><p>∫xⁿ dx = xⁿ⁺¹/(n+1) + C, n ≠ −1<br>∫1/x dx = ln|x| + C<br>∫eˣ dx = eˣ + C<br>∫cos x dx = sen x + C</p></div><div class="mini"><b>Técnicas</b><p>Substituição: u = g(x), útil quando aparece g e sua derivada (regra da cadeia ao contrário).<br>Por partes: ∫u dv = uv − ∫v du, útil em produtos.</p></div></div></article>
+			<article class="lesson" id="teorema"><div class="label">O elo entre as duas grandes ideias</div><h3>Teorema Fundamental do Cálculo</h3><p>Derivar e integrar são operações inversas. Se F′ = f, a área líquida entre a e b pode ser calculada pela diferença dos valores da primitiva:</p><div class="formula">∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a)</div><p>Além disso, se A(x) = ∫<sub>a</sub><sup>x</sup> f(t)dt, então A′(x) = f(x): a taxa de crescimento do acumulado é o próprio valor que está sendo acumulado.</p><div class="idea"><span class="bar"></span><div><b>Exemplo:</b> ∫₀² 3x² dx = [x³]₀² = 8.</div></div></article>
+		</div></div></div></section>
+
+		<section class="practice" id="praticar"><div class="wrap"><div class="heading"><div class="label">Agora é sua vez</div><h2>Pratique o que aprendeu</h2><p>Escolha uma resposta e confira a explicação.</p></div>
+			<div class="practice-layout"><div class="practice-info"><h3>Teste suas ideias.</h3><p>Pratique os três assuntos com questões curtas e feedback imediato.</p><ul><li><svg class="i"><use href="#i-check"/></svg>Filtre por assunto ou misture tudo.</li><li><svg class="i"><use href="#i-check"/></svg>Use a dica se ficar em dúvida.</li><li><svg class="i"><use href="#i-check"/></svg>Acompanhe os acertos da sessão.</li></ul><div class="score" id="score">Acertos: 0 / 0</div></div>
+			<div class="quiz"><div class="controls"><label for="selBtn">Assunto:</label>
+				<div class="select" id="selWrap">
+					<select id="topic" class="native" tabindex="-1" aria-hidden="true"><option value="todos">Todos</option><option value="limites">Limites</option><option value="derivadas">Derivadas</option><option value="integrais">Integrais</option></select>
+					<button type="button" class="select-btn" id="selBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="selList"><span id="selLabel">Todos</span><svg class="i"><use href="#i-chev"/></svg></button>
+					<ul class="select-list" id="selList" role="listbox" tabindex="-1" aria-labelledby="selBtn">
+						<li role="option" id="o0" data-value="todos" aria-selected="true">Todos<svg class="i"><use href="#i-check"/></svg></li>
+						<li role="option" id="o1" data-value="limites" aria-selected="false">Limites<svg class="i"><use href="#i-check"/></svg></li>
+						<li role="option" id="o2" data-value="derivadas" aria-selected="false">Derivadas<svg class="i"><use href="#i-check"/></svg></li>
+						<li role="option" id="o3" data-value="integrais" aria-selected="false">Integrais<svg class="i"><use href="#i-check"/></svg></li>
+					</ul>
+				</div>
+				<span class="count" id="count"></span></div>
+				<div class="question" id="question"></div><div class="answers" id="answers"></div><div class="feedback" id="feedback" aria-live="polite"></div>
+				<div class="quiz-actions"><button class="btn soft" id="hint"><svg class="i" style="transform:none"><use href="#i-bulb"/></svg><span id="hintTxt">Ver dica</span></button><button class="btn primary" id="next"><span id="nextTxt">Próxima questão</span><svg class="i" id="nextIcon"><use href="#i-arrow"/></svg></button></div></div></div></div></section>
+	</main>
+	<footer class="footer">Cálculo sem mistério · Aprender é aproximar, observar e praticar.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* ======================= LÓGICA ORIGINAL (preservada) ======================= */
+const bank=[
+	{t:'limites',q:'Qual é limₓ→₂ (x² − 4)/(x − 2)?',o:['0','2','4','Não existe'],a:2,h:'Fatore x² − 4 como diferença de quadrados.',e:'(x² − 4) = (x − 2)(x + 2). Para x ≠ 2, resta x + 2, cujo limite é 4.'},
+	{t:'limites',q:'Quando existe um limite bilateral?',o:['Quando f(a)=0','Quando os limites laterais existem e são iguais','Somente se f for polinômio','Quando o gráfico cruza o eixo x'],a:1,h:'Compare a aproximação pela esquerda e pela direita.',e:'O limite bilateral existe se os limites laterais existem e coincidem. f(a) pode até ser diferente.'},
+	{t:'limites',q:'Qual é limₓ→₁ (x² − 1)/(x − 1)?',o:['0','1','2','Não existe'],a:2,h:'Fatore x² − 1 como (x − 1)(x + 1).',e:'Cancelando x − 1 para x ≠ 1, resta x + 1. O limite é 2.'},
+	{t:'derivadas',q:'Se f(x)=x³, quanto vale f′(2)?',o:['6','8','12','16'],a:2,h:'Use (xⁿ)′ = n·xⁿ⁻¹.',e:'f′(x)=3x²; portanto f′(2)=3·4=12.'},
+	{t:'derivadas',q:'Qual é a derivada de 5x² − 3x?',o:['10x − 3','5x − 3','10x² − 3','10x'],a:0,h:'Derive cada termo usando a regra da potência.',e:'(5x²)′=10x e (−3x)′=−3. Logo, f′=10x−3.'},
+	{t:'derivadas',q:'Se s(t) representa posição, o que é s′(t)?',o:['A aceleração','A velocidade instantânea','Sempre a distância total','A posição inicial'],a:1,h:'A derivada mede a taxa instantânea de mudança.',e:'A derivada da posição em relação ao tempo é a velocidade; a segunda derivada é a aceleração.'},
+	{t:'integrais',q:'Quanto vale ∫₀² 2x dx?',o:['2','4','6','8'],a:1,h:'Uma primitiva de 2x é x².',e:'Pelo Teorema Fundamental: [x²]₀² = 4 − 0 = 4.'},
+	{t:'integrais',q:'Qual é uma primitiva de cos x?',o:['−sen x','sen x','−cos x','tg x'],a:1,h:'A derivada de sen x é cos x.',e:'Como (sen x)′ = cos x, uma primitiva é sen x + C.'},
+	{t:'integrais',q:'O que representa ∫ₐᵇ f(x) dx?',o:['Inclinação em a','Acumulação líquida no intervalo','Soma de f(a) e f(b)','Altura máxima'],a:1,h:'Imagine somar áreas de retângulos muito estreitos.',e:'A integral definida soma contribuições no intervalo; áreas abaixo do eixo x contam negativamente.'}
+];
+const el=id=>document.getElementById(id);let list=[],i=0,done=false,score=0,total=0,hinted=false;
+function start(){list=bank.filter(x=>el('topic').value==='todos'||x.t===el('topic').value);i=0;show()}
+function show(){const q=list[i];done=false;hinted=false;el('count').textContent=`Questão ${i+1} de ${list.length}`;el('question').textContent=q.q;el('feedback').textContent='';el('feedback').className='feedback';el('hintTxt').textContent='Ver dica';el('hint').disabled=false;const last=i===list.length-1;el('nextTxt').textContent=last?'Recomeçar lista':'Próxima questão';el('nextIcon').firstElementChild.setAttribute('href',last?'#i-redo':'#i-arrow');el('answers').replaceChildren(...q.o.map((text,n)=>{const b=document.createElement('button');b.className='answer';b.textContent=String.fromCharCode(65+n)+') '+text;b.onclick=()=>choose(n);return b}));fxQuestion()}
+function choose(n){if(done)return;done=true;total++;const q=list[i],ok=n===q.a;if(ok)score++;[...el('answers').children].forEach((b,k)=>{b.disabled=true;if(k===q.a)b.classList.add('good');else if(k===n)b.classList.add('bad')});el('feedback').textContent=(ok?'Correto! ':'Quase. ')+q.e;el('feedback').className='feedback '+(ok?'good':'bad');el('score').textContent=`Acertos: ${score} / ${total}`;fxFeedback()}
+el('hint').onclick=()=>{if(!hinted){el('feedback').textContent='Dica: '+list[i].h;hinted=true;el('hintTxt').textContent='Dica exibida';fxFeedback()}};
+el('next').onclick=()=>{if(i===list.length-1){score=0;total=0;el('score').textContent='Acertos: 0 / 0';i=0}else i++;show()};
+el('topic').onchange=start;
+
+/* ======================= INTERFACE (apresentação) ======================= */
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const hasGsap=typeof gsap!=='undefined'&&!reduce;
+if(typeof gsap!=='undefined'&&typeof ScrollTrigger!=='undefined')gsap.registerPlugin(ScrollTrigger);
+
+/* efeitos do quiz (seguros mesmo sem GSAP) */
+function fxQuestion(){if(!hasGsap)return;gsap.fromTo([el('question'),...el('answers').children],{y:12,opacity:0},{y:0,opacity:1,duration:.45,stagger:.06,ease:'power3.out',clearProps:'transform,opacity'})}
+function fxFeedback(){if(!hasGsap)return;gsap.fromTo(el('feedback'),{y:8,opacity:0},{y:0,opacity:1,duration:.4,ease:'power2.out',clearProps:'transform,opacity'})}
+
+/* sidebar: recolher, drawer mobile, scroll-spy */
+const body=document.body,mq=matchMedia('(max-width:900px)');
+el('collapse').onclick=()=>{const c=body.classList.toggle('is-collapsed');el('collapse').setAttribute('aria-expanded',!c);el('collapse').setAttribute('aria-label',c?'Expandir menu':'Recolher menu')};
+function setMenu(open){body.classList.toggle('menu-open',open);el('menu').setAttribute('aria-expanded',open);el('menu').setAttribute('aria-label',open?'Fechar menu':'Abrir menu');el('menu').firstElementChild.firstElementChild.setAttribute('href',open?'#i-close':'#i-menu')}
+el('menu').onclick=()=>setMenu(!body.classList.contains('menu-open'));
+el('scrim').onclick=()=>setMenu(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false)});
+document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click',()=>{if(mq.matches)setMenu(false)}));
+const navMap=new Map([...document.querySelectorAll('.nav-link,.toc a')].map(a=>[a,a.getAttribute('href').slice(1)]));
+const spyIds=[...new Set(navMap.values())];
+function spy(){let cur=spyIds[0];const y=innerHeight*.35;for(const id of spyIds){const s=el(id);if(s&&s.getBoundingClientRect().top<=y)cur=id}
+	navMap.forEach((id,a)=>{const on=id===cur;if(a.classList.contains('nav-link')){a.classList.toggle('active',on);on?a.setAttribute('aria-current','true'):a.removeAttribute('aria-current')}else a.classList.toggle('on',on)})}
+addEventListener('scroll',spy,{passive:true});addEventListener('resize',spy);spy();
+
+/* select customizado (sincronizado com o <select> nativo oculto) */
+(()=>{const wrap=el('selWrap'),btn=el('selBtn'),listEl=el('selList'),opts=[...listEl.children];let hl=0;
+	const isOpen=()=>wrap.classList.contains('open');
+	function setHl(n){hl=(n+opts.length)%opts.length;opts.forEach((o,k)=>o.classList.toggle('hl',k===hl));listEl.setAttribute('aria-activedescendant',opts[hl].id);opts[hl].scrollIntoView({block:'nearest'})}
+	function open(){wrap.classList.add('open');btn.setAttribute('aria-expanded','true');setHl(opts.findIndex(o=>o.getAttribute('aria-selected')==='true'));listEl.focus({preventScroll:true});if(hasGsap)gsap.fromTo(opts,{y:-6,opacity:0},{y:0,opacity:1,duration:.3,stagger:.035,ease:'power2.out',clearProps:'transform,opacity'})}
+	function close(focusBtn){wrap.classList.remove('open');btn.setAttribute('aria-expanded','false');opts.forEach(o=>o.classList.remove('hl'));if(focusBtn)btn.focus()}
+	function pick(n){const o=opts[n];opts.forEach(x=>x.setAttribute('aria-selected',x===o));el('selLabel').textContent=o.firstChild.textContent;const sel=el('topic');if(sel.value!==o.dataset.value){sel.value=o.dataset.value;sel.dispatchEvent(new Event('change'))}close(true)}
+	btn.onclick=()=>isOpen()?close(true):open();
+	btn.addEventListener('keydown',e=>{if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();open()}});
+	listEl.addEventListener('keydown',e=>{const k=e.key;if(k==='ArrowDown'){e.preventDefault();setHl(hl+1)}else if(k==='ArrowUp'){e.preventDefault();setHl(hl-1)}else if(k==='Home'){e.preventDefault();setHl(0)}else if(k==='End'){e.preventDefault();setHl(opts.length-1)}else if(k==='Enter'||k===' '){e.preventDefault();pick(hl)}else if(k==='Escape'){e.preventDefault();close(true)}else if(k==='Tab')close(false)});
+	opts.forEach((o,k)=>{o.addEventListener('mouseenter',()=>setHl(k));o.addEventListener('click',()=>pick(k))});
+	document.addEventListener('click',e=>{if(isOpen()&&!wrap.contains(e.target))close(false)});
+})();
+
+/* animações GSAP: entrada, texto, ScrollTrigger */
+if(hasGsap){
+	/* título: revelação palavra a palavra */
+	const h1=el('title');const words=h1.textContent.trim().split(' ');
+	h1.setAttribute('aria-label',h1.textContent.trim());
+	h1.innerHTML=words.map((w,k)=>`<span class="w" aria-hidden="true"><i>${w}</i></span>${k<words.length-1?' ':''}`).join('');
+	const tl=gsap.timeline({defaults:{ease:'power3.out'}});
+	tl.from('.side',{x:-40,opacity:0,duration:.8,clearProps:'transform,opacity'})
+	  .from('.nav-link',{x:-14,opacity:0,duration:.5,stagger:.04,clearProps:'transform,opacity'},'-=.5')
+	  .from('.hero .eyebrow',{y:14,opacity:0,duration:.6,clearProps:'transform,opacity'},'-=.6')
+	  .from('#title .w i',{yPercent:110,duration:.8,stagger:.07,clearProps:'transform'},'-=.4')
+	  .from('.hero p.lead',{y:16,opacity:0,duration:.7,clearProps:'transform,opacity'},'-=.5')
+	  .from('.actions .btn',{y:14,opacity:0,duration:.6,stagger:.1,clearProps:'transform,opacity'},'-=.5')
+	  .from('.art',{y:30,opacity:0,duration:.9,clearProps:'transform,opacity'},'-=1.1');
+	const curve=document.querySelector('.curve');
+	if(curve){const L=curve.getTotalLength();gsap.fromTo(curve,{strokeDasharray:L,strokeDashoffset:L},{strokeDashoffset:0,duration:1.6,delay:.9,ease:'power2.inOut',onComplete:()=>curve.removeAttribute('stroke-dasharray')&&curve.removeAttribute('stroke-dashoffset')})}
+	if(typeof ScrollTrigger!=='undefined'){
+		const reveal=(targets,vars={})=>gsap.utils.toArray(targets).forEach(t=>{const kids=t.children.length?[...t.children]:t;gsap.from(kids,{y:22,opacity:0,duration:.8,stagger:.09,ease:'power3.out',clearProps:'transform,opacity',scrollTrigger:{trigger:t,start:'top 86%',once:true},...vars})});
+		reveal('.heading');reveal('.path');reveal('.lesson');reveal('.toc');reveal('.practice-info');
+		gsap.utils.toArray('.step .num').forEach(n=>gsap.from(n,{scale:.7,opacity:0,duration:.7,ease:'back.out(1.6)',clearProps:'transform,opacity',scrollTrigger:{trigger:n,start:'top 90%',once:true}}));
+		gsap.from('.quiz',{y:36,opacity:0,duration:.9,ease:'power3.out',clearProps:'transform,opacity',scrollTrigger:{trigger:'.quiz',start:'top 88%',once:true}});
+		gsap.to('.art',{yPercent:-4,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+		addEventListener('load',()=>ScrollTrigger.refresh());
+	}
+	addEventListener('pagehide',()=>{if(typeof ScrollTrigger!=='undefined')ScrollTrigger.getAll().forEach(s=>s.kill());gsap.globalTimeline.clear()});
+}
+start();
+</script>
+</body>
+</html>

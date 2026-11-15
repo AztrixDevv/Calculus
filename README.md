@@ -16,17 +16,3 @@ Guia interativo e intuitivo de **Cálculo 1**: limites, continuidade, derivadas,
 
 > As animações usam GSAP carregado por CDN (cdnjs). Sem internet, a página funciona normalmente, apenas sem as animações.
 
-## Publicar no GitHub Pages
-
-1. No repositório, abra **Settings → Pages**.
-2. Em **Build and deployment**, escolha **Deploy from a branch**.
-3. Selecione a branch `main` e a pasta `/ (root)`, e salve.
-4. Após alguns minutos, o site estará em `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/`.
-
-## Estrutura
-
-```
-.
-├── index.html
-└── README.md
-```
